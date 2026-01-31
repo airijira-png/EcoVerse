@@ -7,44 +7,57 @@
 </head>
 <body>
 
-<!-- HOME -->
+<!-- ================= HOME ================= -->
 <div id="home-screen" class="screen active">
     <h1 class="title">EcoVerse</h1>
     <button id="start-btn" class="btn">START</button>
 </div>
 
-<!-- MODE SELECT -->
+<!-- ================= MODE SELECT ================= -->
 <div id="mode-screen" class="screen">
     <h2>Select Mode</h2>
+
     <div class="mode-grid">
         <button id="mode-country" class="btn">Country</button>
         <button id="mode-food" class="btn">Food</button>
         <button id="mode-object" class="btn">Object</button>
         <button id="mode-quiz" class="btn">Quiz</button>
+        <button id="mode-history" class="btn">History</button>
     </div>
+
     <button id="back-btn" class="btn secondary">Back</button>
 </div>
 
-<!-- GAME -->
+<!-- ================= GAME ================= -->
 <div id="game-screen" class="screen">
-    <button id="game-home-btn" class="home-btn">Home</button>
-    <div id="progress-text" class="progress">1/1</div>
+    <!-- Home button during game -->
+    <button id="home-game-btn" class="btn home-btn">Home</button>
 
+    <!-- Progress -->
+    <div id="progress" style="margin-bottom:12px; font-size:18px;"></div>
+
+    <!-- Question -->
     <h2 id="question"></h2>
+
+    <!-- Choices -->
     <div id="choices" class="choices"></div>
 </div>
 
-<!-- END -->
+<!-- ================= END ================= -->
 <div id="end-screen" class="screen">
     <h2 id="score-text"></h2>
     <button id="restart-btn" class="btn">Restart</button>
     <button id="home-btn" class="btn secondary">Home</button>
 </div>
 
+<!-- ================= DATA FILES ================= -->
 <script src="data-country.js"></script>
 <script src="data-food.js"></script>
 <script src="data-object.js"></script>
 <script src="data-quiz.js"></script>
+<script src="data-history.js"></script>
+
+<!-- ================= GAME LOGIC ================= -->
 <script src="game.js"></script>
 
 </body>

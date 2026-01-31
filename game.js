@@ -2,8 +2,7 @@ let allData = [];
 let remaining = [];
 let currentAnswer = null;
 let score = 0;
-let currentIndex = 0;
-let locked = false;
+let total = 0;
 
 // screens
 const home = document.getElementById("home-screen");
@@ -15,20 +14,26 @@ const end = document.getElementById("end-screen");
 const questionEl = document.getElementById("question");
 const choicesEl = document.getElementById("choices");
 const scoreText = document.getElementById("score-text");
-const progressText = document.getElementById("progress-text");
+const progressEl = document.getElementById("progress");
 
 // navigation
 document.getElementById("start-btn").onclick = () => show(mode);
 document.getElementById("back-btn").onclick = () => show(home);
 document.getElementById("home-btn").onclick = () => show(home);
-document.getElementById("game-home-btn").onclick = () => show(mode);
 document.getElementById("restart-btn").onclick = () => start(allData);
+
+// home button during game (FIX)
+document.getElementById("home-game-btn").onclick = () => {
+    resetGame();
+    show(home);
+};
 
 // modes
 document.getElementById("mode-country").onclick = () => start(countryData);
 document.getElementById("mode-food").onclick = () => start(foodData);
 document.getElementById("mode-object").onclick = () => start(objectData);
 document.getElementById("mode-quiz").onclick = () => start(quizData);
+document.getElementById("mode-history").onclick = () => start(historyData);
 
 function show(screen) {
     [home, mode, game, end].forEach(s => s.classList.remove("active"));
@@ -38,60 +43,80 @@ function show(screen) {
 function start(data) {
     allData = [...data];
     remaining = shuffle([...data]);
+    total = allData.length;
     score = 0;
-    currentIndex = 0;
     show(game);
     nextQuestion();
 }
 
 function nextQuestion() {
     if (remaining.length === 0) {
-        scoreText.textContent = `Your Score: ${score} / ${allData.length}`;
+        scoreText.textContent = `Your Score: ${score} / ${total}`;
         show(end);
         return;
     }
 
-    locked = false;
     choicesEl.innerHTML = "";
 
-    currentIndex++;
-    progressText.textContent = `${currentIndex}/${allData.length}`;
+    const currentIndex = total - remaining.length + 1;
+    progressEl.textContent = `${currentIndex} / ${total}`;
 
     currentAnswer = remaining.shift();
-    questionEl.textContent = currentAnswer.name;
 
     let options = [
         currentAnswer,
-        ...shuffle(allData.filter(d => d.name !== currentAnswer.name)).slice(0, 3)
+        ...shuffle(allData.filter(i =>
+            (i.name || i.answer) !== (currentAnswer.name || currentAnswer.answer)
+        )).slice(0, 3)
     ];
 
     options = shuffle(options);
 
+    questionEl.textContent =
+        currentAnswer.name ||
+        currentAnswer.question ||
+        currentAnswer.answer;
+
     options.forEach(opt => {
         const img = document.createElement("img");
-        img.src = opt.flag;
+        img.src = opt.flag || opt.image;
+        img.alt = opt.name || opt.answer;
 
-        img.onclick = () => {
-            if (locked) return;
-            locked = true;
-
-            if (opt.name === currentAnswer.name) {
-                score++;
-                img.style.outline = "4px solid #22c55e";
-            } else {
-                img.style.outline = "4px solid #ef4444";
-                [...choicesEl.children].forEach(el => {
-                    if (el.src === currentAnswer.flag) {
-                        el.style.outline = "4px solid #22c55e";
-                    }
-                });
-            }
-
-            setTimeout(nextQuestion, 800);
-        };
-
+        img.onclick = () => handleAnswer(img, opt);
         choicesEl.appendChild(img);
     });
+}
+
+function handleAnswer(img, selected) {
+    const imgs = document.querySelectorAll("#choices img");
+    imgs.forEach(i => i.style.pointerEvents = "none");
+
+    const correct = currentAnswer.name || currentAnswer.answer;
+
+    if ((selected.name || selected.answer) === correct) {
+        img.classList.add("correct");
+        score++;
+    } else {
+        img.classList.add("wrong");
+        imgs.forEach(i => {
+            if (i.alt === correct) {
+                i.classList.add("correct");
+            }
+        });
+    }
+
+    setTimeout(nextQuestion, 900);
+}
+
+function resetGame() {
+    allData = [];
+    remaining = [];
+    currentAnswer = null;
+    score = 0;
+    total = 0;
+    questionEl.textContent = "";
+    choicesEl.innerHTML = "";
+    progressEl.textContent = "";
 }
 
 function shuffle(arr) {

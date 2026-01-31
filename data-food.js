@@ -5,7 +5,7 @@ const foodData = [
     },
     {
         name: "Hamburger",
-        flag: "https://upload.wikimedia.org/wikipedia/commons/4/4f/Hamburger_%28black_bg%29.jpg"
+        flag: "hamburger.jpg"
     },
     {
         name: "Sushi",
@@ -13,23 +13,23 @@ const foodData = [
     },
     {
         name: "Ramen",
-        flag: "https://upload.wikimedia.org/wikipedia/commons/0/0b/Ramen_in_Sapporo.jpg"
+        flag: "ramen.jpg"
     },
     {
         name: "Pad Thai",
-        flag: "https://upload.wikimedia.org/wikipedia/commons/3/3c/Pad_Thai.jpg"
+        flag: "pad_thai.jpg"
     },
     {
         name: "Fried Rice",
-        flag: "https://upload.wikimedia.org/wikipedia/commons/1/18/Fried_rice.jpg"
+        flag: "fried_rice.jpg"
     },
     {
-        name: "Spaghetti",
-        flag: "https://upload.wikimedia.org/wikipedia/commons/0/0b/Spaghetti_al_Pomodoro.JPG"
+        name: "Donut",
+        flag: "donut.jpg"
     },
     {
         name: "Steak",
-        flag: "https://upload.wikimedia.org/wikipedia/commons/2/2a/Grilled_Ribeye_Steak.jpg"
+        flag: "steak.jpg"
     },
     {
         name: "Hot Dog",
@@ -37,15 +37,15 @@ const foodData = [
     },
     {
         name: "Taco",
-        flag: "https://upload.wikimedia.org/wikipedia/commons/7/75/Tacos_de_carnitas.jpg"
+        flag: "taco.jpg"
     },
     {
         name: "Pancake",
-        flag: "https://upload.wikimedia.org/wikipedia/commons/2/2c/Stack_of_pancakes.jpg"
+        flag: "pancake.jpg"
     },
     {
         name: "Ice Cream",
-        flag: "https://upload.wikimedia.org/wikipedia/commons/6/69/Ice_cream_cone.jpg"
+        flag: "ice_cream.jpg"
     }
 ];
 

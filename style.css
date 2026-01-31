@@ -1,108 +1,148 @@
 * {
     box-sizing: border-box;
-    font-family: Arial, sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 body {
     margin: 0;
     height: 100vh;
-    background: radial-gradient(circle at top, #0a2a43, #020b16);
+    background: radial-gradient(circle at top, #0a2540, #020b18);
     color: white;
 }
 
-/* screens */
+/* =====================
+   SCREENS
+===================== */
 .screen {
     display: none;
     height: 100vh;
     width: 100%;
-    padding: 30px;
+    position: relative;
 }
 
 .screen.active {
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
+    align-items: center;
 }
 
-/* home */
+/* =====================
+   TITLES
+===================== */
 .title {
-    font-size: 48px;
+    font-size: 56px;
     margin-bottom: 30px;
+    text-align: center;
 }
 
+/* =====================
+   BUTTONS
+===================== */
 .btn {
-    padding: 14px 36px;
+    padding: 12px 28px;
     font-size: 18px;
-    border-radius: 12px;
+    border-radius: 10px;
     border: none;
     cursor: pointer;
-    margin: 10px;
+    background: white;
+    color: black;
+    margin: 8px;
 }
 
-.secondary {
-    background: #334155;
-    color: #fff;
+.btn:hover {
+    opacity: 0.9;
 }
 
-/* mode */
+.btn.secondary {
+    background: #444;
+    color: white;
+}
+
+/* =====================
+   MODE SELECT
+===================== */
 .mode-grid {
     display: grid;
     grid-template-columns: repeat(2, 160px);
-    gap: 20px;
+    gap: 16px;
     margin: 20px 0;
 }
 
-/* game */
-#game-screen {
-    position: relative;
+/* =====================
+   GAME SCREEN
+===================== */
+#question {
+    font-size: 28px;
+    margin-bottom: 24px;
+    text-align: center;
 }
 
+/* Home button (top-left) */
+.home-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    padding: 8px 18px;
+    font-size: 16px;
+    border-radius: 8px;
+    z-index: 1000;
+}
+
+/* Progress 1/30 (top-right) */
+#progress {
+    position: fixed;
+    top: 20px;
+    right: 24px;
+    font-size: 18px;
+    font-weight: bold;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+/* =====================
+   CHOICES (IMAGES)
+===================== */
 .choices {
     display: grid;
     grid-template-columns: repeat(2, 160px);
     gap: 20px;
-    margin-top: 20px;
+    justify-content: center;
 }
 
 .choices img {
     width: 160px;
     height: 110px;
     object-fit: cover;
-    border-radius: 12px;
+    border-radius: 14px;
     cursor: pointer;
-    background: #0f172a;
-    padding: 6px;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.2s, opacity 0.2s, box-shadow 0.2s;
+    border: 4px solid transparent;
+    background: white;
 }
 
 .choices img:hover {
     transform: scale(1.05);
-    box-shadow: 0 0 15px rgba(255,255,255,0.6);
 }
 
-/* home button in game */
-.home-btn {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    padding: 8px 14px;
-    font-size: 14px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
+/* =====================
+   ANSWER FEEDBACK
+===================== */
+.choices img.correct {
+    border-color: #2ecc71;
+    box-shadow: 0 0 18px rgba(46, 204, 113, 0.9);
 }
 
-/* progress */
-.progress {
-    position: absolute;
-    top: 18px;
-    right: 20px;
-    font-size: 16px;
+.choices img.wrong {
+    border-color: #e74c3c;
+    opacity: 0.6;
 }
 
-/* end */
+/* =====================
+   END SCREEN
+===================== */
 #end-screen h2 {
     font-size: 32px;
     margin-bottom: 20px;
+    text-align: center;
 }
