@@ -3,41 +3,75 @@ let remaining = [];
 let currentAnswer = null;
 let score = 0;
 let total = 0;
+let currentMode = "";
 
-// screens
+// ================= SCREENS =================
 const home = document.getElementById("home-screen");
 const mode = document.getElementById("mode-screen");
 const game = document.getElementById("game-screen");
 const end = document.getElementById("end-screen");
 
-// elements
+// ================= ELEMENTS =================
 const questionEl = document.getElementById("question");
 const choicesEl = document.getElementById("choices");
 const scoreText = document.getElementById("score-text");
 const progressEl = document.getElementById("progress");
 
-// navigation
+// ================= BUTTONS =================
+const infoBtn = document.getElementById("info-btn");
+const restartBtn = document.getElementById("restart-btn");
+
+// ================= NAVIGATION =================
 document.getElementById("start-btn").onclick = () => show(mode);
 document.getElementById("back-btn").onclick = () => show(home);
 document.getElementById("home-btn").onclick = () => show(home);
-document.getElementById("restart-btn").onclick = () => start(allData);
 
-// home button during game (FIX)
+// home button during game
 document.getElementById("home-game-btn").onclick = () => {
     resetGame();
     show(home);
 };
 
-// modes
-document.getElementById("mode-country").onclick = () => start(countryData);
-document.getElementById("mode-food").onclick = () => start(foodData);
-document.getElementById("mode-object").onclick = () => start(objectData);
-document.getElementById("mode-quiz").onclick = () => start(quizData);
-document.getElementById("mode-history").onclick = () => start(historyData);
+// restart
+if (restartBtn) {
+    restartBtn.onclick = () => {
+        if (currentMode) startByMode(currentMode);
+    };
+}
 
+// info
+if (infoBtn) {
+    infoBtn.onclick = () => {
+        // ส่งหมวดไปให้ info.html
+        window.location.href = `info.html?category=${currentMode}`;
+    };
+}
+
+// ================= MODE BUTTONS =================
+document.getElementById("mode-country").onclick = () => startByMode("country");
+document.getElementById("mode-food").onclick = () => startByMode("food");
+document.getElementById("mode-object").onclick = () => startByMode("object");
+document.getElementById("mode-quiz").onclick = () => startByMode("quiz");
+document.getElementById("mode-history").onclick = () => startByMode("history");
+
+// ================= CORE =================
 function show(screen) {
     [home, mode, game, end].forEach(s => s.classList.remove("active"));
     screen.classList.add("active");
+}
+
+function startByMode(modeName) {
+    currentMode = modeName;
+    localStorage.setItem("mode", modeName);
+
+    let data = [];
+    if (modeName === "country") data = countryData;
+    if (modeName === "food") data = foodData;
+    if (modeName === "object") data = objectData;
+    if (modeName === "quiz") data = quizData;
+    if (modeName === "history") data = historyData;
+
+    start(data);
 }
 
 function start(data) {
@@ -45,6 +79,10 @@ function start(data) {
     remaining = shuffle([...data]);
     total = allData.length;
     score = 0;
+
+    // 🔴 สำคัญมาก: ซ่อน Info ทุกครั้งที่เริ่มเกม
+    if (infoBtn) infoBtn.style.display = "none";
+
     show(game);
     nextQuestion();
 }
@@ -52,6 +90,15 @@ function start(data) {
 function nextQuestion() {
     if (remaining.length === 0) {
         scoreText.textContent = `Your Score: ${score} / ${total}`;
+
+        // ✅ แสดง Info เฉพาะบางหมวดเท่านั้น
+        if (infoBtn) {
+            const allowInfo = ["country", "food", "history"];
+            infoBtn.style.display = allowInfo.includes(currentMode)
+                ? "inline-block"
+                : "none";
+        }
+
         show(end);
         return;
     }
@@ -65,16 +112,18 @@ function nextQuestion() {
 
     let options = [
         currentAnswer,
-        ...shuffle(allData.filter(i =>
-            (i.name || i.answer) !== (currentAnswer.name || currentAnswer.answer)
-        )).slice(0, 3)
+        ...shuffle(
+            allData.filter(i =>
+                (i.name || i.answer) !== (currentAnswer.name || currentAnswer.answer)
+            )
+        ).slice(0, 3)
     ];
 
     options = shuffle(options);
 
     questionEl.textContent =
-        currentAnswer.name ||
         currentAnswer.question ||
+        currentAnswer.name ||
         currentAnswer.answer;
 
     options.forEach(opt => {
@@ -114,13 +163,19 @@ function resetGame() {
     currentAnswer = null;
     score = 0;
     total = 0;
+    currentMode = "";
+
     questionEl.textContent = "";
     choicesEl.innerHTML = "";
     progressEl.textContent = "";
+
+    if (infoBtn) infoBtn.style.display = "none";
 }
 
+// ================= UTILS =================
 function shuffle(arr) {
     return arr.sort(() => Math.random() - 0.5);
 }
 
+// ================= START =================
 show(home);

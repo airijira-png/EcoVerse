@@ -1,0 +1,43 @@
+/* =====================
+   HISTORY MODE (NO CROP REAL FIX)
+===================== */
+
+.mode-history .choices {
+    display: grid;
+    grid-template-columns: repeat(2, 280px);
+    gap: 32px;
+    justify-content: center;
+}
+
+/* 🔥 ปัญหาอยู่ตรงนี้ */
+.mode-history .choice {
+    width: 280px;
+
+    /* ❌ ห้าม fix height */
+    height: auto;
+
+    /* ❌ เอา aspect-ratio ออก */
+    aspect-ratio: unset;
+
+    padding: 0;
+    background: transparent;
+    border: none;
+}
+
+/* 🔥 ให้รูปเป็นคนกำหนดความสูง */
+.mode-history .choice img {
+    width: 100%;
+    height: auto;
+
+    max-height: 360px; /* กันรูปสูงเกิน */
+
+    object-fit: contain;
+
+    background: white;
+    padding: 14px;
+
+    border-radius: 20px;
+    border: 4px solid white;
+
+    display: block;
+}
