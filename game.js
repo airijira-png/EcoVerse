@@ -1,181 +1,262 @@
-let allData = [];
-let remaining = [];
-let currentAnswer = null;
-let score = 0;
-let total = 0;
-let currentMode = "";
+/* ===== State ===== */
+let doorClosed = false;
+let energyFilled = false;
+let autoMode = false;
+let planet = "";
 
-// ================= SCREENS =================
-const home = document.getElementById("home-screen");
-const mode = document.getElementById("mode-screen");
-const game = document.getElementById("game-screen");
-const end = document.getElementById("end-screen");
+let energy = 100;
+let energyTimer = null;
 
-// ================= ELEMENTS =================
-const questionEl = document.getElementById("question");
-const choicesEl = document.getElementById("choices");
-const scoreText = document.getElementById("score-text");
-const progressEl = document.getElementById("progress");
+let shipX = 80;
+let asteroidY = -40;
+let dodged = 0;
+let driving = false;
 
-// ================= BUTTONS =================
-const infoBtn = document.getElementById("info-btn");
-const restartBtn = document.getElementById("restart-btn");
+let quizCorrect = 0;
 
-// ================= NAVIGATION =================
-document.getElementById("start-btn").onclick = () => show(mode);
-document.getElementById("back-btn").onclick = () => show(home);
-document.getElementById("home-btn").onclick = () => show(home);
+/* ===== Elements ===== */
+const startBtn = document.getElementById("startBtn"); // ⭐ เพิ่มแค่นี้
+const statusBar = document.getElementById("status");
+const energyFill = document.getElementById("energyFill");
+const message = document.getElementById("message");
+const ship = document.getElementById("ship");
+const asteroid = document.getElementById("asteroid");
 
-// home button during game
-document.getElementById("home-game-btn").onclick = () => {
-    resetGame();
-    show(home);
+/* ===== Home -> Prepare ===== */
+startBtn.onclick = () => show("prepare");
+
+
+/* ===== Screen Control ===== */
+function show(id) {
+  document.querySelectorAll(
+    "#home,#prepare,#energyGame,#danger,#drive,#quiz,#finish"
+  ).forEach(e => e.classList.add("hidden"));
+
+  document.getElementById(id).classList.remove("hidden");
+
+  // 🔋 พลังงานแสดงเฉพาะช่วงเล่นจริง
+  if (["drive", "quiz"].includes(id)) {
+    statusBar.classList.remove("hidden");
+  } else {
+    statusBar.classList.add("hidden");
+  }
+}
+
+/* ===== Home -> Prepare ===== */
+startBtn.onclick = () => show("prepare");
+
+/* ===== Prepare Logic ===== */
+doorBtn.onclick = () => {
+  doorClosed = true;
+  message.textContent = "✅ ปิดประตูเรียบร้อย";
 };
 
-// restart
-if (restartBtn) {
-    restartBtn.onclick = () => {
-        if (currentMode) startByMode(currentMode);
-    };
+energyBtn.onclick = () => {
+  if (!doorClosed) {
+    message.textContent = "❗ กรุณาปิดประตูก่อนเติมพลังงาน";
+    return;
+  }
+  show("energyGame");
+  newMath();
+};
+
+autoBtn.onclick = () => {
+  if (!energyFilled) {
+    message.textContent = "❗ เติมพลังงานก่อนเปิดโหมดออโต้";
+    return;
+  }
+  autoMode = true;
+  message.textContent = "🤖 เปิดโหมดออโต้แล้ว";
+};
+
+planetSelect.onchange = e => planet = e.target.value;
+
+launchBtn.onclick = () => {
+  if (!doorClosed) return message.textContent = "❗ ยังไม่ได้ปิดประตู";
+  if (!energyFilled) return message.textContent = "❗ เติมพลังงานก่อน";
+  if (!planet) return message.textContent = "❗ เลือกดาวปลายทาง";
+  show("danger");
+};
+
+/* ===== Energy Mini Game ===== */
+let correctAnswer = 0;
+
+function newMath() {
+  const a = Math.floor(Math.random() * 5) + 1;
+  const b = Math.floor(Math.random() * 5) + 1;
+  correctAnswer = a + b;
+  mathQ.textContent = `🧮 ${a} + ${b} = ?`;
 }
 
-// info
-if (infoBtn) {
-    infoBtn.onclick = () => {
-        // ส่งหมวดไปให้ info.html
-        window.location.href = `info.html?category=${currentMode}`;
-    };
+mathSubmit.onclick = () => {
+  if (+mathA.value === correctAnswer) {
+    energyFilled = true;
+    show("prepare");
+    message.textContent = "🔋 เติมพลังงานสำเร็จ";
+  } else {
+    alert("ลองใหม่อีกครั้ง");
+  }
+};
+
+/* ===== Energy Drain ===== */
+function startEnergyDrain() {
+  stopEnergyDrain();
+  energy = 100;
+  updateEnergy();
+  energyTimer = setInterval(() => {
+    energy--;
+    updateEnergy();
+    if (energy <= 0) {
+      alert("พลังงานหมด!");
+      location.reload();
+    }
+  }, 500);
 }
 
-// ================= MODE BUTTONS =================
-document.getElementById("mode-country").onclick = () => startByMode("country");
-document.getElementById("mode-food").onclick = () => startByMode("food");
-document.getElementById("mode-object").onclick = () => startByMode("object");
-document.getElementById("mode-quiz").onclick = () => startByMode("quiz");
-document.getElementById("mode-history").onclick = () => startByMode("history");
-
-// ================= CORE =================
-function show(screen) {
-    [home, mode, game, end].forEach(s => s.classList.remove("active"));
-    screen.classList.add("active");
+function stopEnergyDrain() {
+  if (energyTimer) clearInterval(energyTimer);
 }
 
-function startByMode(modeName) {
-    currentMode = modeName;
-    localStorage.setItem("mode", modeName);
-
-    let data = [];
-    if (modeName === "country") data = countryData;
-    if (modeName === "food") data = foodData;
-    if (modeName === "object") data = objectData;
-    if (modeName === "quiz") data = quizData;
-    if (modeName === "history") data = historyData;
-
-    start(data);
+function updateEnergy() {
+  energyFill.style.width = energy + "%";
+  energyFill.style.background = energy < 30 ? "red" : "lime";
 }
 
-function start(data) {
-    allData = [...data];
-    remaining = shuffle([...data]);
-    total = allData.length;
-    score = 0;
+/* ===== Danger Choices ===== */
+driveBtn.onclick = () => {
+  show("drive");
+  resetDrive();
+  startEnergyDrain();
+  driving = true;
+  requestAnimationFrame(moveAsteroid);
+};
 
-    // 🔴 สำคัญมาก: ซ่อน Info ทุกครั้งที่เริ่มเกม
-    if (infoBtn) infoBtn.style.display = "none";
+quizBtn.onclick = () => {
+  show("quiz");
+  startEnergyDrain();
+  nextQuestion();
+};
 
-    show(game);
-    nextQuestion();
+/* ===== Drive Mode ===== */
+document.addEventListener("keydown", e => {
+  if (!driving) return;
+  if (e.key === "ArrowLeft" && shipX > 0) shipX -= 40;
+  if (e.key === "ArrowRight" && shipX < 160) shipX += 40;
+  ship.style.left = shipX + "px";
+});
+
+function resetDrive() {
+  shipX = 80;
+  asteroidY = -40;
+  dodged = 0;
+  ship.style.left = shipX + "px";
+  document.getElementById("dodged").textContent = dodged;
 }
+
+function moveAsteroid() {
+  if (!driving) return;
+
+  asteroidY += 5;
+  asteroid.style.top = asteroidY + "px";
+
+  if (asteroidY > 300) {
+    dodged++;
+    document.getElementById("dodged").textContent = dodged;
+    resetAsteroid();
+  }
+
+  if (asteroidY > 240 && shipX === asteroid.offsetLeft) {
+    energy -= 15;
+    updateEnergy();
+    resetAsteroid();
+  }
+
+  if (dodged >= 20) return finishGame();
+  requestAnimationFrame(moveAsteroid);
+}
+
+function resetAsteroid() {
+  asteroidY = -40;
+  asteroid.style.top = asteroidY + "px";
+  asteroid.style.left = [0, 80, 160][Math.floor(Math.random() * 3)] + "px";
+}
+
+/* ===== Quiz Mode ===== */
+const questions = [
+  {
+    q: "โลกเป็นดาวประเภทใด?",
+    c: ["ดาวเคราะห์", "ดาวฤกษ์", "ดาวหาง"],
+    a: 0
+  },
+  {
+    q: "ดวงอาทิตย์ให้สิ่งใดกับโลก?",
+    c: ["แสงและความร้อน", "น้ำ", "อากาศ"],
+    a: 0
+  },
+  {
+    q: "ดาวดวงใดเป็นบริวารของโลก?",
+    c: ["ดาวอังคาร", "ดวงจันทร์", "ดาวศุกร์"],
+    a: 1
+  },
+  {
+    q: "นักบินอวกาศใช้สิ่งใดหายใจในอวกาศ?",
+    c: ["หมวกอวกาศ", "อากาศจากโลก", "ต้นไม้"],
+    a: 0
+  },
+  {
+    q: "อวกาศมีอากาศให้หายใจหรือไม่?",
+    c: ["มี", "ไม่มี", "มีเฉพาะกลางวัน"],
+    a: 1
+  },
+  {
+    q: "ดาวอังคารมีสีอะไร?",
+    c: ["สีเขียว", "สีแดง", "สีน้ำเงิน"],
+    a: 1
+  },
+  {
+    q: "โลกหมุนรอบสิ่งใด?",
+    c: ["ดวงอาทิตย์", "ดวงจันทร์", "ดาวพฤหัสบดี"],
+    a: 0
+  },
+  {
+    q: "กลางวันเกิดจากอะไร?",
+    c: ["โลกหมุนเข้าหาดวงอาทิตย์", "ดวงอาทิตย์ดับ", "โลกหยุดหมุน"],
+    a: 0
+  },
+  {
+    q: "ดาวฤกษ์ให้แสงเองได้หรือไม่?",
+    c: ["ได้", "ไม่ได้", "ได้เฉพาะกลางคืน"],
+    a: 0
+  },
+  {
+    q: "ยานอวกาศใช้สิ่งใดเดินทาง?",
+    c: ["พลังงาน", "ลม", "น้ำ"],
+    a: 0
+  }
+];
 
 function nextQuestion() {
-    if (remaining.length === 0) {
-        scoreText.textContent = `Your Score: ${score} / ${total}`;
+  if (quizCorrect >= 5) return finishGame();
 
-        // ✅ แสดง Info เฉพาะบางหมวดเท่านั้น
-        if (infoBtn) {
-            const allowInfo = ["country", "food", "history"];
-            infoBtn.style.display = allowInfo.includes(currentMode)
-                ? "inline-block"
-                : "none";
-        }
+  const q = questions[quizCorrect];
+  quizQ.textContent = q.q;
+  quizChoices.innerHTML = "";
 
-        show(end);
-        return;
-    }
-
-    choicesEl.innerHTML = "";
-
-    const currentIndex = total - remaining.length + 1;
-    progressEl.textContent = `${currentIndex} / ${total}`;
-
-    currentAnswer = remaining.shift();
-
-    let options = [
-        currentAnswer,
-        ...shuffle(
-            allData.filter(i =>
-                (i.name || i.answer) !== (currentAnswer.name || currentAnswer.answer)
-            )
-        ).slice(0, 3)
-    ];
-
-    options = shuffle(options);
-
-    questionEl.textContent =
-        currentAnswer.question ||
-        currentAnswer.name ||
-        currentAnswer.answer;
-
-    options.forEach(opt => {
-        const img = document.createElement("img");
-        img.src = opt.flag || opt.image;
-        img.alt = opt.name || opt.answer;
-
-        img.onclick = () => handleAnswer(img, opt);
-        choicesEl.appendChild(img);
-    });
+  q.c.forEach((choice, i) => {
+    const btn = document.createElement("button");
+    btn.textContent = choice;
+    btn.onclick = () => {
+      if (i === q.a) quizCorrect++;
+      document.getElementById("quizCount").textContent = quizCorrect;
+      nextQuestion();
+    };
+    quizChoices.appendChild(btn);
+  });
 }
 
-function handleAnswer(img, selected) {
-    const imgs = document.querySelectorAll("#choices img");
-    imgs.forEach(i => i.style.pointerEvents = "none");
-
-    const correct = currentAnswer.name || currentAnswer.answer;
-
-    if ((selected.name || selected.answer) === correct) {
-        img.classList.add("correct");
-        score++;
-    } else {
-        img.classList.add("wrong");
-        imgs.forEach(i => {
-            if (i.alt === correct) {
-                i.classList.add("correct");
-            }
-        });
-    }
-
-    setTimeout(nextQuestion, 900);
+/* ===== Finish ===== */
+function finishGame() {
+  driving = false;
+  stopEnergyDrain();
+  show("finish");
 }
-
-function resetGame() {
-    allData = [];
-    remaining = [];
-    currentAnswer = null;
-    score = 0;
-    total = 0;
-    currentMode = "";
-
-    questionEl.textContent = "";
-    choicesEl.innerHTML = "";
-    progressEl.textContent = "";
-
-    if (infoBtn) infoBtn.style.display = "none";
-}
-
-// ================= UTILS =================
-function shuffle(arr) {
-    return arr.sort(() => Math.random() - 0.5);
-}
-
-// ================= START =================
-show(home);

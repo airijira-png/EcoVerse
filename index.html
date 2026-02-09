@@ -1,65 +1,87 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <title>EcoVerse</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>EcoVerse</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<!-- ================= HOME ================= -->
-<div id="home-screen" class="screen active">
-    <h1 class="title">EcoVerse</h1>
-    <button id="start-btn" class="btn">START</button>
-</div>
+  <!-- ===== HOME ===== -->
+  <section id="home" class="screen">
+    <div class="center-box">
+      <h1 class="title">EcoVerse</h1>
+      <p class="subtitle">🚀 ผจญภัยเรียนรู้อวกาศ</p>
+      <button id="startBtn" class="main-btn">
+        ▶ ขึ้นยาน
+      </button>
+    </div>
+  </section>
 
-<!-- ================= MODE SELECT ================= -->
-<div id="mode-screen" class="screen">
-    <h2>Select Mode</h2>
+  <!-- ===== PREPARE ===== -->
+  <section id="prepare" class="screen hidden">
+    <h2>👨‍🚀 เตรียมก่อนออกเดินทาง</h2>
 
-    <div class="mode-grid">
-        <button id="mode-country" class="btn">Country</button>
-        <button id="mode-food" class="btn">Food</button>
-        <button id="mode-object" class="btn">Object</button>
-        <button id="mode-quiz" class="btn">Quiz</button>
-        <button id="mode-history" class="btn">History</button>
+    <div class="btn-group">
+      <button id="doorBtn">🚪 ปิดประตู</button>
+      <button id="energyBtn">🔋 เติมพลังงาน</button>
+      <button id="autoBtn">🤖 โหมดออโต้</button>
     </div>
 
-    <button id="back-btn" class="btn secondary">Back</button>
-</div>
+    <select id="planetSelect">
+      <option value="">🌍 เลือกดาว</option>
+      <option value="mars">ดาวอังคาร</option>
+      <option value="jupiter">ดาวพฤหัสบดี</option>
+    </select>
 
-<!-- ================= GAME ================= -->
-<div id="game-screen" class="screen">
-    <!-- Home button during game -->
-    <button id="home-game-btn" class="btn home-btn">Home</button>
+    <button id="launchBtn" class="main-btn">🚀 ออกเดินทาง</button>
+    <p id="message"></p>
+  </section>
 
-    <!-- Progress -->
-    <div id="progress" style="margin-bottom:12px; font-size:18px;"></div>
+  <!-- ===== ENERGY GAME ===== -->
+  <section id="energyGame" class="screen hidden">
+    <h2 id="mathQ"></h2>
+    <input id="mathA" type="number" />
+    <button id="mathSubmit">ตอบ</button>
+  </section>
 
-    <!-- Question -->
-    <h2 id="question"></h2>
+  <!-- ===== DANGER ===== -->
+  <section id="danger" class="screen hidden">
+    <h2>😱 อ๊ากกก! อุกกาบาต!</h2>
+    <button id="driveBtn">🚀 บุกทะลุย</button>
+    <button id="quizBtn">🧠 ใช้สติปัญญา</button>
+  </section>
 
-    <!-- Choices -->
-    <div id="choices" class="choices"></div>
-</div>
+  <!-- ===== STATUS BAR ===== -->
+  <div id="status" class="hidden">
+    <div id="energyBar">
+      <div id="energyFill"></div>
+    </div>
+  </div>
 
-<!-- ================= END ================= -->
-<div id="end-screen" class="screen">
-    <h2 id="score-text"></h2>
-    <button id="restart-btn" class="btn">Restart</button>
-    <button id="home-btn" class="btn secondary">Home</button>
-    <button id="info-btn">Info</button>
-</div>
+  <!-- ===== DRIVE ===== -->
+  <section id="drive" class="screen hidden">
+    <div id="road">
+      <div id="ship"></div>
+      <div id="asteroid"></div>
+    </div>
+    <p>หลบแล้ว: <span id="dodged">0</span>/5</p>
+  </section>
 
-<!-- ================= DATA FILES ================= -->
-<script src="data-country.js"></script>
-<script src="data-food.js"></script>
-<script src="data-object.js"></script>
-<script src="data-quiz.js"></script>
-<script src="data-history.js"></script>
+  <!-- ===== QUIZ ===== -->
+  <section id="quiz" class="screen hidden">
+    <h2 id="quizQ"></h2>
+    <div id="quizChoices"></div>
+    <p>ตอบถูก: <span id="quizCount">0</span>/5</p>
+  </section>
 
-<!-- ================= GAME LOGIC ================= -->
-<script src="game.js"></script>
+  <!-- ===== FINISH ===== -->
+  <section id="finish" class="screen hidden">
+    <h1>🎉 ภารกิจสำเร็จ!</h1>
+    <button onclick="location.reload()">เล่นใหม่</button>
+  </section>
 
+  <!-- JS -->
+  <script src="game.js" defer></script>
 </body>
 </html>
