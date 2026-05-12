@@ -4,7 +4,7 @@ const ctx = canvas.getContext("2d");
 
 const GRAVITY = 0.5;
 const GROUND_Y = 350;
-const MAP_WIDTH = 2400; // แมพยาวขึ้น 3 เท่า
+const MAP_WIDTH = 2400;
 
 // ===== ข้อมูลทุก Level =====
 const levels = [
@@ -13,7 +13,7 @@ const levels = [
     goalDimension: "alt",
     normal: {
       platforms: [
-        { x: 60,   y: 300, width: 100, height: 15 }, // จุดเกิด
+        { x: 60,   y: 300, width: 100, height: 15 },
         { x: 260,  y: 270, width: 60,  height: 15 },
         { x: 500,  y: 250, width: 60,  height: 15 },
         { x: 750,  y: 260, width: 60,  height: 15 },
@@ -50,7 +50,7 @@ const levels = [
     goalDimension: "normal",
     normal: {
       platforms: [
-        { x: 60,   y: 300, width: 100, height: 15 }, // จุดเกิด
+        { x: 60,   y: 300, width: 100, height: 15 },
         { x: 250,  y: 260, width: 55,  height: 15 },
         { x: 480,  y: 230, width: 55,  height: 15 },
         { x: 750,  y: 245, width: 55,  height: 15 },
@@ -86,7 +86,7 @@ const levels = [
     goalDimension: "alt",
     normal: {
       platforms: [
-        { x: 60,   y: 300, width: 100, height: 15 }, // จุดเกิด
+        { x: 60,   y: 300, width: 100, height: 15 },
         { x: 240,  y: 255, width: 50,  height: 15 },
         { x: 470,  y: 225, width: 50,  height: 15 },
         { x: 730,  y: 240, width: 50,  height: 15 },
@@ -150,9 +150,9 @@ function loadLevel(index) {
   cameraX = 0;
 }
 
-// ===== ปุ่ม UI (ตำแหน่งบน canvas ไม่ขยับตามกล้อง) =====
-const btnNextLevel  = { x: 240, y: 230, width: 150, height: 45 };
-const btnRestart    = { x: 410, y: 230, width: 150, height: 45 };
+// ===== ปุ่ม UI =====
+const btnNextLevel   = { x: 240, y: 230, width: 150, height: 45 };
+const btnRestart     = { x: 410, y: 230, width: 150, height: 45 };
 const btnRestartOnly = { x: 320, y: 230, width: 160, height: 45 };
 
 function drawButton(btn, color, text) {
@@ -209,7 +209,7 @@ canvas.addEventListener("click", (e) => {
   }
 });
 
-// ===== Input =====
+// ===== Input คีย์บอร์ด =====
 const keys = {};
 document.addEventListener("keydown", (e) => {
   keys[e.code] = true;
@@ -228,6 +228,36 @@ document.addEventListener("keydown", (e) => {
   }
 });
 document.addEventListener("keyup", (e) => keys[e.code] = false);
+
+// ===== ปุ่มมือถือ =====
+const btnLeft  = document.getElementById("btnLeft");
+const btnRight = document.getElementById("btnRight");
+const btnJump  = document.getElementById("btnJump");
+const btnDim   = document.getElementById("btnDim");
+
+btnLeft.addEventListener("touchstart",  (e) => { e.preventDefault(); keys["ArrowLeft"]  = true;  });
+btnLeft.addEventListener("touchend",    (e) => { e.preventDefault(); keys["ArrowLeft"]  = false; });
+btnRight.addEventListener("touchstart", (e) => { e.preventDefault(); keys["ArrowRight"] = true;  });
+btnRight.addEventListener("touchend",   (e) => { e.preventDefault(); keys["ArrowRight"] = false; });
+btnJump.addEventListener("touchstart",  (e) => { e.preventDefault(); keys["Space"] = true;  });
+btnJump.addEventListener("touchend",    (e) => { e.preventDefault(); keys["Space"] = false; });
+btnDim.addEventListener("touchstart",   (e) => {
+  e.preventDefault();
+  if (canSwitch && !gameOver && !gameClear && !gameComplete) {
+    dimension = dimension === "normal" ? "alt" : "normal";
+    canSwitch = false;
+    setTimeout(() => canSwitch = true, 300);
+  }
+});
+
+// ===== ปรับขนาด Canvas =====
+function resizeCanvas() {
+  const maxW = Math.min(window.innerWidth - 10, 800);
+  canvas.width  = maxW;
+  canvas.height = maxW * 0.5;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
 
 // ===== Collision =====
 function isColliding(a, b) {
@@ -259,13 +289,11 @@ function update() {
   oppy.x += oppy.velX;
   oppy.y += oppy.velY;
 
-  // ตกลงลาวา
   if (oppy.y + oppy.height >= GROUND_Y) {
     gameOver = true;
     return;
   }
 
-  // ชนแพลตฟอร์ม
   oppy.onGround = false;
   for (const p of world.platforms) {
     if (isColliding(oppy, p)) {
@@ -281,14 +309,11 @@ function update() {
     }
   }
 
-  // ไม่ให้ถอยหลังเกินจุดเกิด
   if (oppy.x < 0) oppy.x = 0;
 
-  // กล้องเลื่อนตาม Oppy
   const targetCam = oppy.x - canvas.width / 3;
   cameraX = Math.max(0, Math.min(targetCam, MAP_WIDTH - canvas.width));
 
-  // ถึงเป้าหมาย
   if (dimension === lvl.goalDimension && isColliding(oppy, lvl.goal)) {
     gameClear = true;
   }
@@ -361,7 +386,6 @@ function drawOppy() {
 }
 
 function drawHUD() {
-  // progress bar
   const progress = oppy.x / MAP_WIDTH;
   ctx.fillStyle = "rgba(0,0,0,0.4)";
   ctx.fillRect(10, 35, canvas.width - 20, 8);
@@ -375,7 +399,6 @@ function drawHUD() {
     10, 25
   );
 
-  // เส้นชัยอยู่โลกไหน
   const lvl = levels[currentLevel];
   ctx.fillStyle = lvl.goalDimension === "normal" ? "#4a9e4a" : "#9b30ff";
   ctx.font = "14px Arial";
