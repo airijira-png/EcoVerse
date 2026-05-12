@@ -1,262 +1,446 @@
-/* ===== State ===== */
-let doorClosed = false;
-let energyFilled = false;
-let autoMode = false;
-let planet = "";
+// ===== Canvas Setup =====
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
 
-let energy = 100;
-let energyTimer = null;
+const GRAVITY = 0.5;
+const GROUND_Y = 350;
+const MAP_WIDTH = 2400; // แมพยาวขึ้น 3 เท่า
 
-let shipX = 80;
-let asteroidY = -40;
-let dodged = 0;
-let driving = false;
-
-let quizCorrect = 0;
-
-/* ===== Elements ===== */
-const startBtn = document.getElementById("startBtn"); // ⭐ เพิ่มแค่นี้
-const statusBar = document.getElementById("status");
-const energyFill = document.getElementById("energyFill");
-const message = document.getElementById("message");
-const ship = document.getElementById("ship");
-const asteroid = document.getElementById("asteroid");
-
-/* ===== Home -> Prepare ===== */
-startBtn.onclick = () => show("prepare");
-
-
-/* ===== Screen Control ===== */
-function show(id) {
-  document.querySelectorAll(
-    "#home,#prepare,#energyGame,#danger,#drive,#quiz,#finish"
-  ).forEach(e => e.classList.add("hidden"));
-
-  document.getElementById(id).classList.remove("hidden");
-
-  // 🔋 พลังงานแสดงเฉพาะช่วงเล่นจริง
-  if (["drive", "quiz"].includes(id)) {
-    statusBar.classList.remove("hidden");
-  } else {
-    statusBar.classList.add("hidden");
-  }
-}
-
-/* ===== Home -> Prepare ===== */
-startBtn.onclick = () => show("prepare");
-
-/* ===== Prepare Logic ===== */
-doorBtn.onclick = () => {
-  doorClosed = true;
-  message.textContent = "✅ ปิดประตูเรียบร้อย";
-};
-
-energyBtn.onclick = () => {
-  if (!doorClosed) {
-    message.textContent = "❗ กรุณาปิดประตูก่อนเติมพลังงาน";
-    return;
-  }
-  show("energyGame");
-  newMath();
-};
-
-autoBtn.onclick = () => {
-  if (!energyFilled) {
-    message.textContent = "❗ เติมพลังงานก่อนเปิดโหมดออโต้";
-    return;
-  }
-  autoMode = true;
-  message.textContent = "🤖 เปิดโหมดออโต้แล้ว";
-};
-
-planetSelect.onchange = e => planet = e.target.value;
-
-launchBtn.onclick = () => {
-  if (!doorClosed) return message.textContent = "❗ ยังไม่ได้ปิดประตู";
-  if (!energyFilled) return message.textContent = "❗ เติมพลังงานก่อน";
-  if (!planet) return message.textContent = "❗ เลือกดาวปลายทาง";
-  show("danger");
-};
-
-/* ===== Energy Mini Game ===== */
-let correctAnswer = 0;
-
-function newMath() {
-  const a = Math.floor(Math.random() * 5) + 1;
-  const b = Math.floor(Math.random() * 5) + 1;
-  correctAnswer = a + b;
-  mathQ.textContent = `🧮 ${a} + ${b} = ?`;
-}
-
-mathSubmit.onclick = () => {
-  if (+mathA.value === correctAnswer) {
-    energyFilled = true;
-    show("prepare");
-    message.textContent = "🔋 เติมพลังงานสำเร็จ";
-  } else {
-    alert("ลองใหม่อีกครั้ง");
-  }
-};
-
-/* ===== Energy Drain ===== */
-function startEnergyDrain() {
-  stopEnergyDrain();
-  energy = 100;
-  updateEnergy();
-  energyTimer = setInterval(() => {
-    energy--;
-    updateEnergy();
-    if (energy <= 0) {
-      alert("พลังงานหมด!");
-      location.reload();
-    }
-  }, 500);
-}
-
-function stopEnergyDrain() {
-  if (energyTimer) clearInterval(energyTimer);
-}
-
-function updateEnergy() {
-  energyFill.style.width = energy + "%";
-  energyFill.style.background = energy < 30 ? "red" : "lime";
-}
-
-/* ===== Danger Choices ===== */
-driveBtn.onclick = () => {
-  show("drive");
-  resetDrive();
-  startEnergyDrain();
-  driving = true;
-  requestAnimationFrame(moveAsteroid);
-};
-
-quizBtn.onclick = () => {
-  show("quiz");
-  startEnergyDrain();
-  nextQuestion();
-};
-
-/* ===== Drive Mode ===== */
-document.addEventListener("keydown", e => {
-  if (!driving) return;
-  if (e.key === "ArrowLeft" && shipX > 0) shipX -= 40;
-  if (e.key === "ArrowRight" && shipX < 160) shipX += 40;
-  ship.style.left = shipX + "px";
-});
-
-function resetDrive() {
-  shipX = 80;
-  asteroidY = -40;
-  dodged = 0;
-  ship.style.left = shipX + "px";
-  document.getElementById("dodged").textContent = dodged;
-}
-
-function moveAsteroid() {
-  if (!driving) return;
-
-  asteroidY += 5;
-  asteroid.style.top = asteroidY + "px";
-
-  if (asteroidY > 300) {
-    dodged++;
-    document.getElementById("dodged").textContent = dodged;
-    resetAsteroid();
-  }
-
-  if (asteroidY > 240 && shipX === asteroid.offsetLeft) {
-    energy -= 15;
-    updateEnergy();
-    resetAsteroid();
-  }
-
-  if (dodged >= 20) return finishGame();
-  requestAnimationFrame(moveAsteroid);
-}
-
-function resetAsteroid() {
-  asteroidY = -40;
-  asteroid.style.top = asteroidY + "px";
-  asteroid.style.left = [0, 80, 160][Math.floor(Math.random() * 3)] + "px";
-}
-
-/* ===== Quiz Mode ===== */
-const questions = [
+// ===== ข้อมูลทุก Level =====
+const levels = [
+  // Level 1 - เส้นชัยโลกมิติ
   {
-    q: "โลกเป็นดาวประเภทใด?",
-    c: ["ดาวเคราะห์", "ดาวฤกษ์", "ดาวหาง"],
-    a: 0
+    goalDimension: "alt",
+    normal: {
+      platforms: [
+        { x: 60,   y: 300, width: 100, height: 15 }, // จุดเกิด
+        { x: 260,  y: 270, width: 60,  height: 15 },
+        { x: 500,  y: 250, width: 60,  height: 15 },
+        { x: 750,  y: 260, width: 60,  height: 15 },
+        { x: 1000, y: 240, width: 60,  height: 15 },
+        { x: 1300, y: 255, width: 60,  height: 15 },
+        { x: 1600, y: 240, width: 60,  height: 15 },
+        { x: 1900, y: 255, width: 60,  height: 15 },
+        { x: 2150, y: 240, width: 60,  height: 15 },
+      ],
+      bgColor: "#16213e",
+      platformColor: "#8B4513",
+    },
+    alt: {
+      platforms: [
+        { x: 160,  y: 245, width: 60,  height: 15 },
+        { x: 380,  y: 210, width: 60,  height: 15 },
+        { x: 620,  y: 230, width: 60,  height: 15 },
+        { x: 870,  y: 200, width: 60,  height: 15 },
+        { x: 1130, y: 215, width: 60,  height: 15 },
+        { x: 1420, y: 200, width: 60,  height: 15 },
+        { x: 1720, y: 210, width: 60,  height: 15 },
+        { x: 2000, y: 195, width: 60,  height: 15 },
+        { x: 2280, y: 180, width: 60,  height: 15 },
+      ],
+      bgColor: "#1a0a2e",
+      platformColor: "#9b30ff",
+    },
+    goal: { x: 2320, y: 130, width: 35, height: 55 },
+    startX: 80, startY: 250,
   },
+
+  // Level 2 - เส้นชัยโลกปกติ
   {
-    q: "ดวงอาทิตย์ให้สิ่งใดกับโลก?",
-    c: ["แสงและความร้อน", "น้ำ", "อากาศ"],
-    a: 0
+    goalDimension: "normal",
+    normal: {
+      platforms: [
+        { x: 60,   y: 300, width: 100, height: 15 }, // จุดเกิด
+        { x: 250,  y: 260, width: 55,  height: 15 },
+        { x: 480,  y: 230, width: 55,  height: 15 },
+        { x: 750,  y: 245, width: 55,  height: 15 },
+        { x: 1050, y: 220, width: 55,  height: 15 },
+        { x: 1350, y: 240, width: 55,  height: 15 },
+        { x: 1650, y: 215, width: 55,  height: 15 },
+        { x: 1950, y: 230, width: 55,  height: 15 },
+        { x: 2250, y: 200, width: 55,  height: 15 },
+      ],
+      bgColor: "#0d1b2a",
+      platformColor: "#6B3410",
+    },
+    alt: {
+      platforms: [
+        { x: 155,  y: 240, width: 55,  height: 15 },
+        { x: 365,  y: 200, width: 55,  height: 15 },
+        { x: 615,  y: 215, width: 55,  height: 15 },
+        { x: 900,  y: 195, width: 55,  height: 15 },
+        { x: 1200, y: 210, width: 55,  height: 15 },
+        { x: 1500, y: 195, width: 55,  height: 15 },
+        { x: 1800, y: 205, width: 55,  height: 15 },
+        { x: 2100, y: 185, width: 55,  height: 15 },
+      ],
+      bgColor: "#12002e",
+      platformColor: "#7700cc",
+    },
+    goal: { x: 2320, y: 150, width: 35, height: 55 },
+    startX: 80, startY: 250,
   },
+
+  // Level 3 - เส้นชัยโลกมิติ ยากสุด
   {
-    q: "ดาวดวงใดเป็นบริวารของโลก?",
-    c: ["ดาวอังคาร", "ดวงจันทร์", "ดาวศุกร์"],
-    a: 1
+    goalDimension: "alt",
+    normal: {
+      platforms: [
+        { x: 60,   y: 300, width: 100, height: 15 }, // จุดเกิด
+        { x: 240,  y: 255, width: 50,  height: 15 },
+        { x: 470,  y: 225, width: 50,  height: 15 },
+        { x: 730,  y: 240, width: 50,  height: 15 },
+        { x: 1020, y: 210, width: 50,  height: 15 },
+        { x: 1330, y: 230, width: 50,  height: 15 },
+        { x: 1650, y: 205, width: 50,  height: 15 },
+        { x: 1980, y: 220, width: 50,  height: 15 },
+        { x: 2250, y: 195, width: 50,  height: 15 },
+      ],
+      bgColor: "#1a0000",
+      platformColor: "#5a2800",
+    },
+    alt: {
+      platforms: [
+        { x: 150,  y: 235, width: 50,  height: 15 },
+        { x: 355,  y: 190, width: 50,  height: 15 },
+        { x: 600,  y: 210, width: 50,  height: 15 },
+        { x: 875,  y: 185, width: 50,  height: 15 },
+        { x: 1175, y: 200, width: 50,  height: 15 },
+        { x: 1490, y: 180, width: 50,  height: 15 },
+        { x: 1815, y: 195, width: 50,  height: 15 },
+        { x: 2115, y: 170, width: 50,  height: 15 },
+        { x: 2310, y: 150, width: 50,  height: 15 },
+      ],
+      bgColor: "#0a0015",
+      platformColor: "#5500aa",
+    },
+    goal: { x: 2330, y: 95, width: 35, height: 55 },
+    startX: 80, startY: 250,
   },
-  {
-    q: "นักบินอวกาศใช้สิ่งใดหายใจในอวกาศ?",
-    c: ["หมวกอวกาศ", "อากาศจากโลก", "ต้นไม้"],
-    a: 0
-  },
-  {
-    q: "อวกาศมีอากาศให้หายใจหรือไม่?",
-    c: ["มี", "ไม่มี", "มีเฉพาะกลางวัน"],
-    a: 1
-  },
-  {
-    q: "ดาวอังคารมีสีอะไร?",
-    c: ["สีเขียว", "สีแดง", "สีน้ำเงิน"],
-    a: 1
-  },
-  {
-    q: "โลกหมุนรอบสิ่งใด?",
-    c: ["ดวงอาทิตย์", "ดวงจันทร์", "ดาวพฤหัสบดี"],
-    a: 0
-  },
-  {
-    q: "กลางวันเกิดจากอะไร?",
-    c: ["โลกหมุนเข้าหาดวงอาทิตย์", "ดวงอาทิตย์ดับ", "โลกหยุดหมุน"],
-    a: 0
-  },
-  {
-    q: "ดาวฤกษ์ให้แสงเองได้หรือไม่?",
-    c: ["ได้", "ไม่ได้", "ได้เฉพาะกลางคืน"],
-    a: 0
-  },
-  {
-    q: "ยานอวกาศใช้สิ่งใดเดินทาง?",
-    c: ["พลังงาน", "ลม", "น้ำ"],
-    a: 0
-  }
 ];
 
-function nextQuestion() {
-  if (quizCorrect >= 5) return finishGame();
+// ===== State =====
+let currentLevel = 0;
+let dimension = "normal";
+let gameOver = false;
+let gameClear = false;
+let gameComplete = false;
+let canSwitch = true;
+let cameraX = 0;
 
-  const q = questions[quizCorrect];
-  quizQ.textContent = q.q;
-  quizChoices.innerHTML = "";
+// ===== ตัวละคร Oppy =====
+const oppy = {
+  x: 80, y: 250,
+  width: 40, height: 50,
+  velX: 0, velY: 0,
+  speed: 5, jumpForce: -13,
+  onGround: false
+};
 
-  q.c.forEach((choice, i) => {
-    const btn = document.createElement("button");
-    btn.textContent = choice;
-    btn.onclick = () => {
-      if (i === q.a) quizCorrect++;
-      document.getElementById("quizCount").textContent = quizCorrect;
-      nextQuestion();
-    };
-    quizChoices.appendChild(btn);
-  });
+// ===== โหลด Level =====
+function loadLevel(index) {
+  const lvl = levels[index];
+  oppy.x = lvl.startX;
+  oppy.y = lvl.startY;
+  oppy.velX = 0;
+  oppy.velY = 0;
+  dimension = "normal";
+  gameOver = false;
+  gameClear = false;
+  cameraX = 0;
 }
 
-/* ===== Finish ===== */
-function finishGame() {
-  driving = false;
-  stopEnergyDrain();
-  show("finish");
+// ===== ปุ่ม UI (ตำแหน่งบน canvas ไม่ขยับตามกล้อง) =====
+const btnNextLevel  = { x: 240, y: 230, width: 150, height: 45 };
+const btnRestart    = { x: 410, y: 230, width: 150, height: 45 };
+const btnRestartOnly = { x: 320, y: 230, width: 160, height: 45 };
+
+function drawButton(btn, color, text) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.roundRect(btn.x, btn.y, btn.width, btn.height, 10);
+  ctx.fill();
+  ctx.fillStyle = "#fff";
+  ctx.font = "bold 18px Arial";
+  ctx.textAlign = "center";
+  ctx.fillText(text, btn.x + btn.width / 2, btn.y + btn.height / 2 + 6);
+  ctx.textAlign = "left";
 }
+
+function isClickInBtn(mx, my, btn) {
+  return mx >= btn.x && mx <= btn.x + btn.width &&
+         my >= btn.y && my <= btn.y + btn.height;
+}
+
+canvas.addEventListener("click", (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  if (gameClear) {
+    if (isClickInBtn(mx, my, btnNextLevel)) {
+      currentLevel++;
+      if (currentLevel >= levels.length) {
+        gameComplete = true;
+        gameClear = false;
+      } else {
+        loadLevel(currentLevel);
+      }
+    }
+    if (isClickInBtn(mx, my, btnRestart)) {
+      currentLevel = 0;
+      gameClear = false;
+      loadLevel(0);
+    }
+  }
+
+  if (gameOver) {
+    if (isClickInBtn(mx, my, btnRestartOnly)) {
+      loadLevel(currentLevel);
+    }
+  }
+
+  if (gameComplete) {
+    if (isClickInBtn(mx, my, btnRestartOnly)) {
+      currentLevel = 0;
+      gameComplete = false;
+      loadLevel(0);
+    }
+  }
+});
+
+// ===== Input =====
+const keys = {};
+document.addEventListener("keydown", (e) => {
+  keys[e.code] = true;
+
+  if (e.code === "KeyE" && canSwitch && !gameOver && !gameClear && !gameComplete) {
+    dimension = dimension === "normal" ? "alt" : "normal";
+    canSwitch = false;
+    setTimeout(() => canSwitch = true, 300);
+  }
+
+  if (e.code === "KeyR" && gameOver) loadLevel(currentLevel);
+  if (e.code === "KeyR" && gameComplete) {
+    currentLevel = 0;
+    gameComplete = false;
+    loadLevel(0);
+  }
+});
+document.addEventListener("keyup", (e) => keys[e.code] = false);
+
+// ===== Collision =====
+function isColliding(a, b) {
+  return (
+    a.x < b.x + b.width &&
+    a.x + a.width > b.x &&
+    a.y < b.y + b.height &&
+    a.y + a.height > b.y
+  );
+}
+
+// ===== Update =====
+function update() {
+  if (gameOver || gameClear || gameComplete) return;
+
+  const lvl = levels[currentLevel];
+  const world = dimension === "normal" ? lvl.normal : lvl.alt;
+
+  if (keys["ArrowLeft"]  || keys["KeyA"]) oppy.velX = -oppy.speed;
+  else if (keys["ArrowRight"] || keys["KeyD"]) oppy.velX = oppy.speed;
+  else oppy.velX = 0;
+
+  if ((keys["ArrowUp"] || keys["KeyW"] || keys["Space"]) && oppy.onGround) {
+    oppy.velY = oppy.jumpForce;
+    oppy.onGround = false;
+  }
+
+  oppy.velY += GRAVITY;
+  oppy.x += oppy.velX;
+  oppy.y += oppy.velY;
+
+  // ตกลงลาวา
+  if (oppy.y + oppy.height >= GROUND_Y) {
+    gameOver = true;
+    return;
+  }
+
+  // ชนแพลตฟอร์ม
+  oppy.onGround = false;
+  for (const p of world.platforms) {
+    if (isColliding(oppy, p)) {
+      const prevBottom = oppy.y + oppy.height - oppy.velY;
+      if (oppy.velY > 0 && prevBottom <= p.y + 5) {
+        oppy.y = p.y - oppy.height;
+        oppy.velY = 0;
+        oppy.onGround = true;
+      } else if (oppy.velY < 0) {
+        oppy.y = p.y + p.height;
+        oppy.velY = 0;
+      }
+    }
+  }
+
+  // ไม่ให้ถอยหลังเกินจุดเกิด
+  if (oppy.x < 0) oppy.x = 0;
+
+  // กล้องเลื่อนตาม Oppy
+  const targetCam = oppy.x - canvas.width / 3;
+  cameraX = Math.max(0, Math.min(targetCam, MAP_WIDTH - canvas.width));
+
+  // ถึงเป้าหมาย
+  if (dimension === lvl.goalDimension && isColliding(oppy, lvl.goal)) {
+    gameClear = true;
+  }
+}
+
+// ===== Draw =====
+function drawBackground() {
+  const world = dimension === "normal"
+    ? levels[currentLevel].normal
+    : levels[currentLevel].alt;
+  ctx.fillStyle = world.bgColor;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+function drawLava() {
+  ctx.fillStyle = "#ff4500";
+  ctx.fillRect(-cameraX, GROUND_Y, MAP_WIDTH, canvas.height - GROUND_Y);
+  ctx.fillStyle = "#ff6a00";
+  for (let i = 0; i < MAP_WIDTH; i += 40) {
+    ctx.beginPath();
+    ctx.ellipse(i - cameraX + 20, GROUND_Y, 20, 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawPlatforms() {
+  const lvl = levels[currentLevel];
+  const world = dimension === "normal" ? lvl.normal : lvl.alt;
+  ctx.fillStyle = world.platformColor;
+  for (const p of world.platforms) {
+    ctx.fillRect(p.x - cameraX, p.y, p.width, p.height);
+  }
+}
+
+function drawGoal() {
+  const lvl = levels[currentLevel];
+  if (dimension === lvl.goalDimension) {
+    const g = lvl.goal;
+    ctx.fillStyle = "#FFD700";
+    ctx.fillRect(g.x - cameraX, g.y, g.width, g.height);
+    ctx.font = "20px Arial";
+    ctx.fillText("🏁", g.x - cameraX, g.y - 5);
+  }
+}
+
+function drawOppy() {
+  const screenX = oppy.x - cameraX;
+  if (dimension === "alt") {
+    ctx.shadowColor = "#9b30ff";
+    ctx.shadowBlur = 15;
+  }
+  ctx.fillStyle = "#f5c518";
+  ctx.beginPath();
+  ctx.ellipse(
+    screenX + oppy.width / 2,
+    oppy.y + oppy.height / 2,
+    oppy.width / 2, oppy.height / 2,
+    0, 0, Math.PI * 2
+  );
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  ctx.fillStyle = "#000";
+  ctx.beginPath();
+  ctx.arc(screenX + 14, oppy.y + 18, 5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(screenX + 26, oppy.y + 18, 5, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawHUD() {
+  // progress bar
+  const progress = oppy.x / MAP_WIDTH;
+  ctx.fillStyle = "rgba(0,0,0,0.4)";
+  ctx.fillRect(10, 35, canvas.width - 20, 8);
+  ctx.fillStyle = dimension === "normal" ? "#4a9e4a" : "#9b30ff";
+  ctx.fillRect(10, 35, (canvas.width - 20) * progress, 8);
+
+  ctx.fillStyle = dimension === "normal" ? "#4a9e4a" : "#9b30ff";
+  ctx.font = "bold 16px Arial";
+  ctx.fillText(
+    dimension === "normal" ? "🌍 โลกปกติ  [E] สลับมิติ" : "🌀 โลกมิติ  [E] กลับ",
+    10, 25
+  );
+
+  // เส้นชัยอยู่โลกไหน
+  const lvl = levels[currentLevel];
+  ctx.fillStyle = lvl.goalDimension === "normal" ? "#4a9e4a" : "#9b30ff";
+  ctx.font = "14px Arial";
+  ctx.textAlign = "center";
+  ctx.fillText(
+    lvl.goalDimension === "normal" ? "🏁 เส้นชัย: โลกปกติ" : "🏁 เส้นชัย: โลกมิติ",
+    canvas.width / 2, 25
+  );
+  ctx.textAlign = "left";
+
+  ctx.fillStyle = "#fff";
+  ctx.font = "bold 16px Arial";
+  ctx.textAlign = "right";
+  ctx.fillText(`Level ${currentLevel + 1} / ${levels.length}`, canvas.width - 10, 25);
+  ctx.textAlign = "left";
+}
+
+function drawUI() {
+  if (gameClear) {
+    ctx.fillStyle = "rgba(0,0,0,0.6)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#FFD700";
+    ctx.font = "bold 52px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("🎉 CLEAR!", canvas.width / 2, 200);
+    ctx.textAlign = "left";
+    drawButton(btnNextLevel, "#4CAF50", "▶ Next Level");
+    drawButton(btnRestart,   "#e53935", "↺ เริ่มใหม่");
+  }
+
+  if (gameOver) {
+    ctx.fillStyle = "rgba(0,0,0,0.6)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#ff4444";
+    ctx.font = "bold 52px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("💀 GAME OVER", canvas.width / 2, 200);
+    ctx.textAlign = "left";
+    drawButton(btnRestartOnly, "#e53935", "↺ เล่นด่านนี้ใหม่");
+  }
+
+  if (gameComplete) {
+    ctx.fillStyle = "rgba(0,0,0,0.7)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#FFD700";
+    ctx.font = "bold 42px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("🏆 ผ่านทุก Level แล้ว!", canvas.width / 2, 190);
+    ctx.textAlign = "left";
+    drawButton(btnRestartOnly, "#4CAF50", "↺ เล่นใหม่ตั้งแต่ต้น");
+  }
+}
+
+// ===== Game Loop =====
+function gameLoop() {
+  drawBackground();
+  drawLava();
+  drawPlatforms();
+  drawGoal();
+  drawOppy();
+  drawHUD();
+  drawUI();
+  update();
+  requestAnimationFrame(gameLoop);
+}
+
+loadLevel(0);
+gameLoop();

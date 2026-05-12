@@ -2,86 +2,11 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <title>EcoVerse</title>
+  <title>Oppy Game</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-  <!-- ===== HOME ===== -->
-  <section id="home" class="screen">
-    <div class="center-box">
-      <h1 class="title">EcoVerse</h1>
-      <p class="subtitle">🚀 ผจญภัยเรียนรู้อวกาศ</p>
-      <button id="startBtn" class="main-btn">
-        ▶ ขึ้นยาน
-      </button>
-    </div>
-  </section>
-
-  <!-- ===== PREPARE ===== -->
-  <section id="prepare" class="screen hidden">
-    <h2>👨‍🚀 เตรียมก่อนออกเดินทาง</h2>
-
-    <div class="btn-group">
-      <button id="doorBtn">🚪 ปิดประตู</button>
-      <button id="energyBtn">🔋 เติมพลังงาน</button>
-      <button id="autoBtn">🤖 โหมดออโต้</button>
-    </div>
-
-    <select id="planetSelect">
-      <option value="">🌍 เลือกดาว</option>
-      <option value="mars">ดาวอังคาร</option>
-      <option value="jupiter">ดาวพฤหัสบดี</option>
-    </select>
-
-    <button id="launchBtn" class="main-btn">🚀 ออกเดินทาง</button>
-    <p id="message"></p>
-  </section>
-
-  <!-- ===== ENERGY GAME ===== -->
-  <section id="energyGame" class="screen hidden">
-    <h2 id="mathQ"></h2>
-    <input id="mathA" type="number" />
-    <button id="mathSubmit">ตอบ</button>
-  </section>
-
-  <!-- ===== DANGER ===== -->
-  <section id="danger" class="screen hidden">
-    <h2>😱 อ๊ากกก! อุกกาบาต!</h2>
-    <button id="driveBtn">🚀 บุกทะลุย</button>
-    <button id="quizBtn">🧠 ใช้สติปัญญา</button>
-  </section>
-
-  <!-- ===== STATUS BAR ===== -->
-  <div id="status" class="hidden">
-    <div id="energyBar">
-      <div id="energyFill"></div>
-    </div>
-  </div>
-
-  <!-- ===== DRIVE ===== -->
-  <section id="drive" class="screen hidden">
-    <div id="road">
-      <div id="ship"></div>
-      <div id="asteroid"></div>
-    </div>
-    <p>หลบแล้ว: <span id="dodged">0</span>/5</p>
-  </section>
-
-  <!-- ===== QUIZ ===== -->
-  <section id="quiz" class="screen hidden">
-    <h2 id="quizQ"></h2>
-    <div id="quizChoices"></div>
-    <p>ตอบถูก: <span id="quizCount">0</span>/5</p>
-  </section>
-
-  <!-- ===== FINISH ===== -->
-  <section id="finish" class="screen hidden">
-    <h1>🎉 ภารกิจสำเร็จ!</h1>
-    <button onclick="location.reload()">เล่นใหม่</button>
-  </section>
-
-  <!-- JS -->
-  <script src="game.js" defer></script>
+  <canvas id="gameCanvas" width="800" height="400"></canvas>
+  <script src="game.js"></script>
 </body>
 </html>
