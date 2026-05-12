@@ -7,47 +7,14 @@
 body {
   background-color: #1a1a2e;
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  height: 100vh;
   overflow: hidden;
 }
 
 canvas {
-  border: 2px solid #fff;
   background-color: #16213e;
   max-width: 100%;
-}
-
-#controls {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  max-width: 800px;
-  padding: 10px 20px;
-  margin-top: 10px;
-}
-
-#left-controls, #right-controls {
-  display: flex;
-  gap: 10px;
-}
-
-#controls button {
-  width: 65px;
-  height: 65px;
-  font-size: 24px;
-  border-radius: 50%;
-  border: none;
-  background-color: rgba(255, 255, 255, 0.2);
-  color: #fff;
-  cursor: pointer;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-
-#controls button:active {
-  background-color: rgba(255, 255, 255, 0.5);
+  max-height: 100vh;
 }
