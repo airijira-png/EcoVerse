@@ -8,6 +8,7 @@ const MAP_WIDTH = 2400;
 
 // ===== ข้อมูลทุก Level =====
 const levels = [
+  // Level 1 - เส้นชัยโลกมิติ
   {
     goalDimension: "alt",
     normal: {
@@ -22,7 +23,8 @@ const levels = [
         { x: 1900, y: 255, width: 60,  height: 15 },
         { x: 2150, y: 240, width: 60,  height: 15 },
       ],
-      bgColor: "#16213e", platformColor: "#8B4513",
+      bgColor: "#16213e",
+      platformColor: "#8B4513",
     },
     alt: {
       platforms: [
@@ -36,11 +38,14 @@ const levels = [
         { x: 2000, y: 195, width: 60,  height: 15 },
         { x: 2280, y: 180, width: 60,  height: 15 },
       ],
-      bgColor: "#1a0a2e", platformColor: "#9b30ff",
+      bgColor: "#1a0a2e",
+      platformColor: "#9b30ff",
     },
     goal: { x: 2320, y: 130, width: 35, height: 55 },
     startX: 80, startY: 250,
   },
+
+  // Level 2 - เส้นชัยโลกปกติ
   {
     goalDimension: "normal",
     normal: {
@@ -55,7 +60,8 @@ const levels = [
         { x: 1950, y: 230, width: 55,  height: 15 },
         { x: 2250, y: 200, width: 55,  height: 15 },
       ],
-      bgColor: "#0d1b2a", platformColor: "#6B3410",
+      bgColor: "#0d1b2a",
+      platformColor: "#6B3410",
     },
     alt: {
       platforms: [
@@ -68,11 +74,14 @@ const levels = [
         { x: 1800, y: 205, width: 55,  height: 15 },
         { x: 2100, y: 185, width: 55,  height: 15 },
       ],
-      bgColor: "#12002e", platformColor: "#7700cc",
+      bgColor: "#12002e",
+      platformColor: "#7700cc",
     },
     goal: { x: 2320, y: 150, width: 35, height: 55 },
     startX: 80, startY: 250,
   },
+
+  // Level 3 - เส้นชัยโลกมิติ ยากสุด
   {
     goalDimension: "alt",
     normal: {
@@ -87,7 +96,8 @@ const levels = [
         { x: 1980, y: 220, width: 50,  height: 15 },
         { x: 2250, y: 195, width: 50,  height: 15 },
       ],
-      bgColor: "#1a0000", platformColor: "#5a2800",
+      bgColor: "#1a0000",
+      platformColor: "#5a2800",
     },
     alt: {
       platforms: [
@@ -101,7 +111,8 @@ const levels = [
         { x: 2115, y: 170, width: 50,  height: 15 },
         { x: 2310, y: 150, width: 50,  height: 15 },
       ],
-      bgColor: "#0a0015", platformColor: "#5500aa",
+      bgColor: "#0a0015",
+      platformColor: "#5500aa",
     },
     goal: { x: 2330, y: 95, width: 35, height: 55 },
     startX: 80, startY: 250,
@@ -125,14 +136,6 @@ const oppy = {
   speed: 5, jumpForce: -13,
   onGround: false
 };
-
-// ===== ปรับขนาด Canvas =====
-function resizeCanvas() {
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-resizeCanvas();
-window.addEventListener("resize", resizeCanvas);
 
 // ===== โหลด Level =====
 function loadLevel(index) {
@@ -190,9 +193,13 @@ canvas.addEventListener("click", (e) => {
       loadLevel(0);
     }
   }
+
   if (gameOver) {
-    if (isClickInBtn(mx, my, btnRestartOnly)) loadLevel(currentLevel);
+    if (isClickInBtn(mx, my, btnRestartOnly)) {
+      loadLevel(currentLevel);
+    }
   }
+
   if (gameComplete) {
     if (isClickInBtn(mx, my, btnRestartOnly)) {
       currentLevel = 0;
@@ -206,11 +213,13 @@ canvas.addEventListener("click", (e) => {
 const keys = {};
 document.addEventListener("keydown", (e) => {
   keys[e.code] = true;
+
   if (e.code === "KeyE" && canSwitch && !gameOver && !gameClear && !gameComplete) {
     dimension = dimension === "normal" ? "alt" : "normal";
     canSwitch = false;
     setTimeout(() => canSwitch = true, 300);
   }
+
   if (e.code === "KeyR" && gameOver) loadLevel(currentLevel);
   if (e.code === "KeyR" && gameComplete) {
     currentLevel = 0;
@@ -220,81 +229,35 @@ document.addEventListener("keydown", (e) => {
 });
 document.addEventListener("keyup", (e) => keys[e.code] = false);
 
-// ===== ปุ่มมือถือบน Canvas =====
-const touchBtns = {
-  left:  { x: 0, y: 0, w: 80, h: 80 },
-  right: { x: 0, y: 0, w: 80, h: 80 },
-  jump:  { x: 0, y: 0, w: 80, h: 80 },
-  dim:   { x: 0, y: 0, w: 80, h: 80 },
-};
+// ===== ปุ่มมือถือ =====
+const btnLeft  = document.getElementById("btnLeft");
+const btnRight = document.getElementById("btnRight");
+const btnJump  = document.getElementById("btnJump");
+const btnDim   = document.getElementById("btnDim");
 
-function updateTouchBtnPositions() {
-  const b = 20;
-  touchBtns.left.x  = 20;
-  touchBtns.left.y  = canvas.height - 80 - b;
-  touchBtns.right.x = 120;
-  touchBtns.right.y = canvas.height - 80 - b;
-  touchBtns.jump.x  = canvas.width - 120;
-  touchBtns.jump.y  = canvas.height - 80 - b;
-  touchBtns.dim.x   = canvas.width - 220;
-  touchBtns.dim.y   = canvas.height - 80 - b;
-}
-
-function drawTouchButtons() {
-  if (window.innerWidth > 800) return;
-  updateTouchBtnPositions();
-  const btns = [
-    { ...touchBtns.left,  label: "◀" },
-    { ...touchBtns.right, label: "▶" },
-    { ...touchBtns.jump,  label: "▲" },
-    { ...touchBtns.dim,   label: "E" },
-  ];
-  for (const btn of btns) {
-    ctx.fillStyle = "rgba(255,255,255,0.25)";
-    ctx.beginPath();
-    ctx.roundRect(btn.x, btn.y, btn.w, btn.h, 40);
-    ctx.fill();
-    ctx.fillStyle = "#fff";
-    ctx.font = "bold 28px Arial";
-    ctx.textAlign = "center";
-    ctx.fillText(btn.label, btn.x + btn.w / 2, btn.y + btn.h / 2 + 10);
-    ctx.textAlign = "left";
-  }
-}
-
-function isTouchInBtn(tx, ty, btn) {
-  return tx >= btn.x && tx <= btn.x + btn.w &&
-         ty >= btn.y && ty <= btn.y + btn.h;
-}
-
-canvas.addEventListener("touchstart", (e) => {
+btnLeft.addEventListener("touchstart",  (e) => { e.preventDefault(); keys["ArrowLeft"]  = true;  });
+btnLeft.addEventListener("touchend",    (e) => { e.preventDefault(); keys["ArrowLeft"]  = false; });
+btnRight.addEventListener("touchstart", (e) => { e.preventDefault(); keys["ArrowRight"] = true;  });
+btnRight.addEventListener("touchend",   (e) => { e.preventDefault(); keys["ArrowRight"] = false; });
+btnJump.addEventListener("touchstart",  (e) => { e.preventDefault(); keys["Space"] = true;  });
+btnJump.addEventListener("touchend",    (e) => { e.preventDefault(); keys["Space"] = false; });
+btnDim.addEventListener("touchstart",   (e) => {
   e.preventDefault();
-  updateTouchBtnPositions();
-  for (const touch of e.changedTouches) {
-    const tx = touch.clientX;
-    const ty = touch.clientY;
-    if (isTouchInBtn(tx, ty, touchBtns.left))  keys["ArrowLeft"]  = true;
-    if (isTouchInBtn(tx, ty, touchBtns.right)) keys["ArrowRight"] = true;
-    if (isTouchInBtn(tx, ty, touchBtns.jump))  keys["Space"]      = true;
-    if (isTouchInBtn(tx, ty, touchBtns.dim) && canSwitch && !gameOver && !gameClear && !gameComplete) {
-      dimension = dimension === "normal" ? "alt" : "normal";
-      canSwitch = false;
-      setTimeout(() => canSwitch = true, 300);
-    }
+  if (canSwitch && !gameOver && !gameClear && !gameComplete) {
+    dimension = dimension === "normal" ? "alt" : "normal";
+    canSwitch = false;
+    setTimeout(() => canSwitch = true, 300);
   }
-}, { passive: false });
+});
 
-canvas.addEventListener("touchend", (e) => {
-  e.preventDefault();
-  updateTouchBtnPositions();
-  for (const touch of e.changedTouches) {
-    const tx = touch.clientX;
-    const ty = touch.clientY;
-    if (isTouchInBtn(tx, ty, touchBtns.left))  keys["ArrowLeft"]  = false;
-    if (isTouchInBtn(tx, ty, touchBtns.right)) keys["ArrowRight"] = false;
-    if (isTouchInBtn(tx, ty, touchBtns.jump))  keys["Space"]      = false;
-  }
-}, { passive: false });
+// ===== ปรับขนาด Canvas =====
+function resizeCanvas() {
+  const maxW = Math.min(window.innerWidth - 10, 800);
+  canvas.width  = maxW;
+  canvas.height = maxW * 0.5;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
 
 // ===== Collision =====
 function isColliding(a, b) {
@@ -465,6 +428,7 @@ function drawUI() {
     drawButton(btnNextLevel, "#4CAF50", "▶ Next Level");
     drawButton(btnRestart,   "#e53935", "↺ เริ่มใหม่");
   }
+
   if (gameOver) {
     ctx.fillStyle = "rgba(0,0,0,0.6)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -475,6 +439,7 @@ function drawUI() {
     ctx.textAlign = "left";
     drawButton(btnRestartOnly, "#e53935", "↺ เล่นด่านนี้ใหม่");
   }
+
   if (gameComplete) {
     ctx.fillStyle = "rgba(0,0,0,0.7)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -495,7 +460,6 @@ function gameLoop() {
   drawGoal();
   drawOppy();
   drawHUD();
-  drawTouchButtons();
   drawUI();
   update();
   requestAnimationFrame(gameLoop);
