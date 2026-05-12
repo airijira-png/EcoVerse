@@ -20,61 +20,6 @@ canvas {
   max-width: 100%;
 }
 
-/* ปุ่มมือถือ */
-#controls {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  max-width: 800px;
-  padding: 10px 20px;
-  margin-top: 10px;
-}
-
-#left-controls, #right-controls {
-  display: flex;
-  gap: 10px;
-}
-
-#controls button {
-  width: 65px;
-  height: 65px;
-  font-size: 24px;
-  border-radius: 50%;
-  border: none;
-  background-color: rgba(255, 255, 255, 0.2);
-  color: #fff;
-  cursor: pointer;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-
-#controls button:active {
-  background-color: rgba(255, 255, 255, 0.5);
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  background-color: #1a1a2e;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  overflow: hidden;
-}
-
-canvas {
-  border: 2px solid #fff;
-  max-width: 100%;
-}
-
-/* ปุ่มมือถือ — แสดงเสมอ */
 #controls {
   display: flex;
   justify-content: space-between;
