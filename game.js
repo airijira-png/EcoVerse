@@ -2,7 +2,7 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-const GRAVITY = 0.5;
+const GRAVITY = 0.5;//v2
 const GROUND_Y = 350;
 const MAP_WIDTH = 2400;
 
