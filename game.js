@@ -3,11 +3,13 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 const GRAVITY = 0.5;
-const GROUND_Y = 350; // กลับมาใช้ค่าคงที่
+const GROUND_Y = 350;
 const MAP_WIDTH = 2400;
 
+// ===== Screen State =====
+let screen = "menu"; // "menu", "levelSelect", "playing"
+
 const levels = [
-  // Level 1 - สลับมิติไปมาตลอด
   {
     goalDimension: "alt",
     normal: {
@@ -39,73 +41,65 @@ const levels = [
     goal: { x: 2340, y: 110, width: 35, height: 55 },
     startX: 80, startY: 250,
   },
-
-  // Level 2 - เส้นชัยโลกปกติ
   {
     goalDimension: "normal",
     normal: {
       platforms: [
-        { x: 60,   y: 300, width: 100, height: 15 },
-        { x: 250,  y: 260, width: 55,  height: 15 },
-        { x: 480,  y: 230, width: 55,  height: 15 },
-        { x: 750,  y: 245, width: 55,  height: 15 },
-        { x: 1050, y: 220, width: 55,  height: 15 },
-        { x: 1350, y: 240, width: 55,  height: 15 },
-        { x: 1650, y: 215, width: 55,  height: 15 },
-        { x: 1950, y: 230, width: 55,  height: 15 },
-        { x: 2250, y: 200, width: 55,  height: 15 },
+        { x: 60,   y: 300, width: 90,  height: 15 },
+        { x: 550,  y: 280, width: 70,  height: 15 },
+        { x: 1400, y: 310, width: 70,  height: 15 },
+        { x: 650,  y: 200, width: 100, height: 15 },
+        { x: 1800, y: 150, width: 80,  height: 15 },
       ],
       bgColor: "#0d1b2a", platformColor: "#6B3410",
     },
     alt: {
       platforms: [
-        { x: 155,  y: 240, width: 55,  height: 15 },
-        { x: 365,  y: 200, width: 55,  height: 15 },
-        { x: 615,  y: 215, width: 55,  height: 15 },
-        { x: 900,  y: 195, width: 55,  height: 15 },
-        { x: 1200, y: 210, width: 55,  height: 15 },
-        { x: 1500, y: 195, width: 55,  height: 15 },
-        { x: 1800, y: 205, width: 55,  height: 15 },
-        { x: 2100, y: 185, width: 55,  height: 15 },
+        { x: 200,  y: 310, width: 60,  height: 15 },
+        { x: 800,  y: 290, width: 60,  height: 15 },
+        { x: 1600, y: 300, width: 60,  height: 15 },
+        { x: 350,  y: 230, width: 60,  height: 15 },
+        { x: 950,  y: 240, width: 100, height: 15 },
+        { x: 500,  y: 160, width: 60,  height: 15 },
+        { x: 1100, y: 130, width: 60,  height: 15 },
       ],
       bgColor: "#12002e", platformColor: "#7700cc",
     },
-    goal: { x: 2320, y: 150, width: 35, height: 55 },
+    goal: { x: 1820, y: 95, width: 35, height: 55 },
     startX: 80, startY: 250,
   },
-
-  // Level 3 - เส้นชัยโลกมิติ ยากสุด
   {
     goalDimension: "alt",
     normal: {
       platforms: [
-        { x: 60,   y: 300, width: 100, height: 15 },
-        { x: 240,  y: 255, width: 50,  height: 15 },
-        { x: 470,  y: 225, width: 50,  height: 15 },
-        { x: 730,  y: 240, width: 50,  height: 15 },
-        { x: 1020, y: 210, width: 50,  height: 15 },
-        { x: 1330, y: 230, width: 50,  height: 15 },
-        { x: 1650, y: 205, width: 50,  height: 15 },
-        { x: 1980, y: 220, width: 50,  height: 15 },
-        { x: 2250, y: 195, width: 50,  height: 15 },
+        { x: 60,   y: 300, width: 90,  height: 15 },
+        { x: 550,  y: 270, width: 120, height: 15 },
+        { x: 950,  y: 240, width: 80,  height: 15 },
+        { x: 380,  y: 210, width: 80,  height: 15 },
+        { x: 1470, y: 200, width: 80,  height: 15 },
+      ],
+      spikes: [
+        { x: 590, y: 255, width: 40, height: 15 },
       ],
       bgColor: "#1a0000", platformColor: "#5a2800",
     },
     alt: {
       platforms: [
-        { x: 150,  y: 235, width: 50,  height: 15 },
-        { x: 355,  y: 190, width: 50,  height: 15 },
-        { x: 600,  y: 210, width: 50,  height: 15 },
-        { x: 875,  y: 185, width: 50,  height: 15 },
-        { x: 1175, y: 200, width: 50,  height: 15 },
-        { x: 1490, y: 180, width: 50,  height: 15 },
-        { x: 1815, y: 195, width: 50,  height: 15 },
-        { x: 2115, y: 170, width: 50,  height: 15 },
-        { x: 2310, y: 150, width: 50,  height: 15 },
+        { x: 200,  y: 300, width: 65,  height: 15 },
+        { x: 390,  y: 285, width: 65,  height: 15 },
+        { x: 820,  y: 270, width: 65,  height: 15 },
+        { x: 160,  y: 220, width: 65,  height: 15 },
+        { x: 1150, y: 210, width: 65,  height: 15 },
+        { x: 600,  y: 170, width: 100, height: 15 },
+        { x: 1000, y: 140, width: 100,  height: 15 },
+        { x: 1700, y: 140, width: 65,  height: 15 },
+      ],
+      spikes: [
+        { x: 630, y: 155, width: 40, height: 15 },
       ],
       bgColor: "#0a0015", platformColor: "#5500aa",
     },
-    goal: { x: 2330, y: 95, width: 35, height: 55 },
+    goal: { x: 1720, y: 90, width: 35, height: 55 },
     startX: 80, startY: 250,
   },
 ];
@@ -131,7 +125,7 @@ const oppy = {
 // ===== ปรับขนาด Canvas =====
 function resizeCanvas() {
   canvas.width  = window.innerWidth;
-  canvas.height = 500; // ความสูงคงที่ พอดีกับ GROUND_Y 350
+  canvas.height = 500;
 }
 resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
@@ -147,12 +141,13 @@ function loadLevel(index) {
   gameOver = false;
   gameClear = false;
   cameraX = 0;
+  screen = "playing";
 }
 
 // ===== ปุ่ม UI =====
-const btnNextLevel   = { x: 240, y: 230, width: 150, height: 45 };
-const btnRestart     = { x: 410, y: 230, width: 150, height: 45 };
-const btnRestartOnly = { x: 320, y: 230, width: 160, height: 45 };
+function getBtnNextLevel()   { return { x: canvas.width/2-160, y: 230, width: 150, height: 45 }; }
+function getBtnRestart()     { return { x: canvas.width/2+10,  y: 230, width: 150, height: 45 }; }
+function getBtnRestartOnly() { return { x: canvas.width/2-80,  y: 230, width: 160, height: 45 }; }
 
 function drawButton(btn, color, text) {
   ctx.fillStyle = color;
@@ -171,35 +166,159 @@ function isClickInBtn(mx, my, btn) {
          my >= btn.y && my <= btn.y + btn.height;
 }
 
+// ===== Menu Buttons =====
+function getMenuBtns() {
+  const cx = canvas.width / 2;
+  return {
+    start: { x: cx - 100, y: 220, width: 200, height: 55 },
+    level: { x: cx - 100, y: 295, width: 200, height: 55 },
+  };
+}
+
+function getLevelBtns() {
+  const cx = canvas.width / 2;
+  return [
+    { x: cx - 180, y: 230, width: 100, height: 100, label: "1" },
+    { x: cx - 50,  y: 230, width: 100, height: 100, label: "2" },
+    { x: cx + 80,  y: 230, width: 100, height: 100, label: "3" },
+  ];
+}
+
+// ===== Draw Menu =====
+function drawMenu() {
+  // พื้นหลัง
+  ctx.fillStyle = "#0f0f1e";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // ดาว
+  ctx.fillStyle = "rgba(255,255,255,0.3)";
+  for (let i = 0; i < 80; i++) {
+    const sx = (i * 137 + 50) % canvas.width;
+    const sy = (i * 97 + 30) % (canvas.height * 0.7);
+    ctx.beginPath();
+    ctx.arc(sx, sy, 1.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // ชื่อเกม
+  ctx.shadowColor = "#9b30ff";
+  ctx.shadowBlur = 20;
+  ctx.fillStyle = "#f5c518";
+  ctx.font = "bold 64px Arial";
+  ctx.textAlign = "center";
+  ctx.fillText("Oppy Game", canvas.width / 2, 140);
+  ctx.shadowBlur = 0;
+
+  // Oppy
+  ctx.fillStyle = "#f5c518";
+  ctx.beginPath();
+  ctx.ellipse(canvas.width/2, 185, 25, 30, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle = "#000";
+  ctx.beginPath();
+  ctx.arc(canvas.width/2 - 8, 180, 5, 0, Math.PI*2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(canvas.width/2 + 8, 180, 5, 0, Math.PI*2);
+  ctx.fill();
+
+  // ปุ่ม
+  const btns = getMenuBtns();
+  drawButton(btns.start, "#4CAF50", "▶  START");
+  drawButton(btns.level, "#7700cc", "🎮  LEVEL SELECT");
+
+  ctx.textAlign = "left";
+}
+
+// ===== Draw Level Select =====
+function drawLevelSelect() {
+  ctx.fillStyle = "#0f0f1e";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "#fff";
+  ctx.font = "bold 40px Arial";
+  ctx.textAlign = "center";
+  ctx.fillText("เลือก Level", canvas.width / 2, 160);
+
+  const btns = getLevelBtns();
+  const colors = ["#4CAF50", "#2196F3", "#e53935"];
+  for (let i = 0; i < btns.length; i++) {
+    const b = btns[i];
+    ctx.fillStyle = colors[i];
+    ctx.beginPath();
+    ctx.roundRect(b.x, b.y, b.width, b.height, 15);
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 48px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText(b.label, b.x + b.width/2, b.y + b.height/2 + 16);
+  }
+
+  // ปุ่มกลับ
+  const backBtn = { x: canvas.width/2 - 70, y: 370, width: 140, height: 45 };
+  drawButton(backBtn, "#555", "◀ กลับ");
+  ctx.textAlign = "left";
+}
+
+// ===== Click Handler =====
 canvas.addEventListener("click", (e) => {
   const rect = canvas.getBoundingClientRect();
   const mx = e.clientX - rect.left;
   const my = e.clientY - rect.top;
 
-  if (gameClear) {
-    if (isClickInBtn(mx, my, btnNextLevel)) {
-      currentLevel++;
-      if (currentLevel >= levels.length) {
-        gameComplete = true;
-        gameClear = false;
-      } else {
-        loadLevel(currentLevel);
+  if (screen === "menu") {
+    const btns = getMenuBtns();
+    if (isClickInBtn(mx, my, btns.start)) {
+      currentLevel = 0;
+      loadLevel(0);
+    }
+    if (isClickInBtn(mx, my, btns.level)) {
+      screen = "levelSelect";
+    }
+  }
+
+  else if (screen === "levelSelect") {
+    const btns = getLevelBtns();
+    for (let i = 0; i < btns.length; i++) {
+      if (isClickInBtn(mx, my, btns[i])) {
+        currentLevel = i;
+        loadLevel(i);
       }
     }
-    if (isClickInBtn(mx, my, btnRestart)) {
-      currentLevel = 0;
-      gameClear = false;
-      loadLevel(0);
+    const backBtn = { x: canvas.width/2 - 70, y: 370, width: 140, height: 45 };
+    if (isClickInBtn(mx, my, backBtn)) screen = "menu";
+  }
+
+  else if (screen === "playing") {
+    const btnNextLevel   = getBtnNextLevel();
+    const btnRestart     = getBtnRestart();
+    const btnRestartOnly = getBtnRestartOnly();
+
+    if (gameClear) {
+      if (isClickInBtn(mx, my, btnNextLevel)) {
+        currentLevel++;
+        if (currentLevel >= levels.length) {
+          gameComplete = true;
+          gameClear = false;
+        } else {
+          loadLevel(currentLevel);
+        }
+      }
+      if (isClickInBtn(mx, my, btnRestart)) {
+        currentLevel = 0;
+        gameClear = false;
+        loadLevel(0);
+      }
     }
-  }
-  if (gameOver) {
-    if (isClickInBtn(mx, my, btnRestartOnly)) loadLevel(currentLevel);
-  }
-  if (gameComplete) {
-    if (isClickInBtn(mx, my, btnRestartOnly)) {
-      currentLevel = 0;
-      gameComplete = false;
-      loadLevel(0);
+    if (gameOver) {
+      if (isClickInBtn(mx, my, btnRestartOnly)) loadLevel(currentLevel);
+    }
+    if (gameComplete) {
+      if (isClickInBtn(mx, my, btnRestartOnly)) {
+        currentLevel = 0;
+        gameComplete = false;
+        screen = "menu";
+      }
     }
   }
 });
@@ -208,17 +327,14 @@ canvas.addEventListener("click", (e) => {
 const keys = {};
 document.addEventListener("keydown", (e) => {
   keys[e.code] = true;
+  if (screen !== "playing") return;
   if (e.code === "KeyE" && canSwitch && !gameOver && !gameClear && !gameComplete) {
     dimension = dimension === "normal" ? "alt" : "normal";
     canSwitch = false;
     setTimeout(() => canSwitch = true, 300);
   }
   if (e.code === "KeyR" && gameOver) loadLevel(currentLevel);
-  if (e.code === "KeyR" && gameComplete) {
-    currentLevel = 0;
-    gameComplete = false;
-    loadLevel(0);
-  }
+  if (e.code === "Escape") screen = "menu";
 });
 document.addEventListener("keyup", (e) => keys[e.code] = false);
 
@@ -274,6 +390,7 @@ canvas.addEventListener("touchstart", (e) => {
   for (const touch of e.changedTouches) {
     const tx = touch.clientX;
     const ty = touch.clientY;
+    if (screen !== "playing") return;
     if (isTouchInBtn(tx, ty, touchBtns.left))  keys["ArrowLeft"]  = true;
     if (isTouchInBtn(tx, ty, touchBtns.right)) keys["ArrowRight"] = true;
     if (isTouchInBtn(tx, ty, touchBtns.jump))  keys["Space"]      = true;
@@ -309,6 +426,7 @@ function isColliding(a, b) {
 
 // ===== Update =====
 function update() {
+  if (screen !== "playing") return;
   if (gameOver || gameClear || gameComplete) return;
 
   const lvl = levels[currentLevel];
@@ -352,6 +470,16 @@ function update() {
   const targetCam = oppy.x - canvas.width / 3;
   cameraX = Math.max(0, Math.min(targetCam, MAP_WIDTH - canvas.width));
 
+  const spikes = (dimension === "normal" ? lvl.normal : lvl.alt).spikes;
+  if (spikes) {
+    for (const s of spikes) {
+      if (isColliding(oppy, s)) {
+        gameOver = true;
+        return;
+      }
+    }
+  }
+
   if (dimension === lvl.goalDimension && isColliding(oppy, lvl.goal)) {
     gameClear = true;
   }
@@ -383,6 +511,21 @@ function drawPlatforms() {
   ctx.fillStyle = world.platformColor;
   for (const p of world.platforms) {
     ctx.fillRect(p.x - cameraX, p.y, p.width, p.height);
+  }
+}
+
+function drawSpikes() {
+  const lvl = levels[currentLevel];
+  const world = dimension === "normal" ? lvl.normal : lvl.alt;
+  if (!world.spikes) return;
+  ctx.fillStyle = "#ff4444";
+  for (const s of world.spikes) {
+    ctx.beginPath();
+    ctx.moveTo(s.x - cameraX, s.y + s.height);
+    ctx.lineTo(s.x - cameraX + s.width / 2, s.y);
+    ctx.lineTo(s.x - cameraX + s.width, s.y + s.height);
+    ctx.closePath();
+    ctx.fill();
   }
 }
 
@@ -455,6 +598,10 @@ function drawHUD() {
 }
 
 function drawUI() {
+  const btnNextLevel   = getBtnNextLevel();
+  const btnRestart     = getBtnRestart();
+  const btnRestartOnly = getBtnRestartOnly();
+
   if (gameClear) {
     ctx.fillStyle = "rgba(0,0,0,0.6)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -484,23 +631,29 @@ function drawUI() {
     ctx.textAlign = "center";
     ctx.fillText("🏆 ผ่านทุก Level แล้ว!", canvas.width / 2, 190);
     ctx.textAlign = "left";
-    drawButton(btnRestartOnly, "#4CAF50", "↺ เล่นใหม่ตั้งแต่ต้น");
+    drawButton(btnRestartOnly, "#4CAF50", "↺ กลับหน้าเมนู");
   }
 }
 
 // ===== Game Loop =====
 function gameLoop() {
-  drawBackground();
-  drawLava();
-  drawPlatforms();
-  drawGoal();
-  drawOppy();
-  drawHUD();
-  drawTouchButtons();
-  drawUI();
+  if (screen === "menu") {
+    drawMenu();
+  } else if (screen === "levelSelect") {
+    drawLevelSelect();
+  } else {
+    drawBackground();
+    drawLava();
+    drawPlatforms();
+    drawSpikes();
+    drawGoal();
+    drawOppy();
+    drawHUD();
+    drawTouchButtons();
+    drawUI();
+  }
   update();
   requestAnimationFrame(gameLoop);
 }
 
-loadLevel(0);
 gameLoop();
