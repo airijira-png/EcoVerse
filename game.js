@@ -12,7 +12,7 @@ let screen = "menu"; // "menu", "levelSelect", "playing"
 const levels = [
   {
     goalDimension: "alt",
-    normal: {git add game.js
+    normal: {
       platforms: [
         { x: 60,   y: 310, width: 80,  height: 15 },
         { x: 280,  y: 290, width: 70,  height: 15 },
